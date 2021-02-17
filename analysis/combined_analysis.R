@@ -168,9 +168,9 @@ match_data_long %>%
   geom_line(aes(linetype = Condition),
             size = 1) +
   geom_hline(yintercept = 0.5, linetype = "twodash") +
-  geom_errorbar(aes(ymin = prop - se, ymax = prop + se),
+  geom_errorbar(aes(ymin = prop - (1.96 * se), ymax = prop + (1.96 * se)),
                 width = 0.25) +
-  ylim(c(0, 1)) +
+  # ylim(c(0, 1)) +
   scale_x_discrete(labels = trial_labels) +
   # scale_color_viridis(discrete = T) +
   # scale_color_grey(start = 0.2, end = 0.2) +
@@ -227,10 +227,29 @@ explanation_data_long %>%
 
 # Calculate modal explanation type for each child
 # TODO how to handle ties?
+tmp = explanation_data %>%
+  rowwise() %>%
+  mutate(
+    modal_explanation = list(Mode(
+      c(`Trial 1a Explanation OR Description Choice`,
+        `Trial 1b Explanation OR Description Choice`,
+        `Trial 2a Explanation OR Description Choice`,
+        `Trial 2b Explanation OR Description Choice`,
+        `Trial 3a Explanation OR Description Choice`,
+        `Trial 3b Explanation OR Description Choice`,
+        `Trial 4a Explanation OR Description Choice`,
+        `Trial 4b Explanation OR Description Choice`,
+        `Trial 5a Explanation OR Description Choice`,
+        `Trial 5b Explanation OR Description Choice`,
+        `Trial 6a Explanation OR Description Choice`,
+        `Trial 6b Explanation OR Description Choice`)
+    )))
+
 explanation_data = explanation_data %>%
   rowwise() %>%
   mutate(
-    modal_explanation = Mode(
+    modal_explanation = # list(
+      Mode(
       c(`Trial 1a Explanation OR Description Choice`,
         `Trial 1b Explanation OR Description Choice`,
         `Trial 2a Explanation OR Description Choice`,
@@ -244,7 +263,9 @@ explanation_data = explanation_data %>%
         `Trial 6a Explanation OR Description Choice`,
         `Trial 6b Explanation OR Description Choice`)
       )[1],  # NB: this chooses the "first" mode but doesn't handle ties
-    modal_explanation_experimenter_trials = Mode(
+    # )), # One subject (21) has a tie between "1" and "3"
+    modal_explanation_experimenter_trials = # list(
+      Mode(
       c(
         `Trial 1a Explanation OR Description Choice`,
         `Trial 1b Explanation OR Description Choice`,
@@ -254,7 +275,9 @@ explanation_data = explanation_data %>%
         `Trial 5b Explanation OR Description Choice`
       )
     )[1],
-    modal_explanation_child_trials = Mode(
+    # )), # One subject (19) has a tie between "1" and "3"
+    modal_explanation_child_trials = # list(
+      Mode(
       c(
         `Trial 2a Explanation OR Description Choice`,
         `Trial 2b Explanation OR Description Choice`,
@@ -264,12 +287,13 @@ explanation_data = explanation_data %>%
         `Trial 6b Explanation OR Description Choice`
       )
     )[1]
+    # )) # No ties
   )
 
 # Sanity check the above
-table(explanation_data$modal_explanation)
-table(explanation_data$modal_explanation_experimenter_trials)
-table(explanation_data$modal_explanation_child_trials)
+explanation_data$modal_explanation
+explanation_data$modal_explanation_experimenter_trials
+explanation_data$modal_explanation_child_trials
 
 
 # Evaluate likelihood of selecting relational response for each modal explanation
@@ -288,8 +312,8 @@ joint_data %>%
 
 # Is there a difference in match values between relational and object modal responders?
 t.test(
-  joint_data$Total_match[joint_data$modal_explanation == 2], # relational
   joint_data$Total_match[joint_data$modal_explanation == 1], # object
+  joint_data$Total_match[joint_data$modal_explanation == 2], # relational
   var.equal = T # NB: t value quite different if we don't assume equal variance
 )
 
@@ -328,17 +352,9 @@ explanation_pcts = explanation_data_long %>%
          pct = num_explanations / sum(num_explanations))
 explanation_pcts
 
-
-tmp = explanation_pcts %>%
-  mutate(other = total - num_explanations) %>%
-  ungroup() %>%
-  filter(explanation_code == 2) %>%
-  select(num_explanations, other) %>%
-  as.matrix()
-tmp
-
-chisq.test(tmp[1,], tmp[2,])
-
+prop_data = explanation_pcts %>%
+  filter(explanation_code == 2)
+prop.test(x = prop_data$num_explanations, n = prop_data$total)
 
 # How consistent were children's modal explanation types across experimenter and child trials?
 explanation_data %>% # Percent of modal relational explanations in experimenter trials
@@ -400,10 +416,10 @@ joint_data %>%
   # All trials combined
 joint_data %>%
   rowwise() %>%
-  mutate(`Combined trials` =
+  mutate(`All trials` =
            factor(explanation_code_lookup[modal_explanation],
                   levels = explanation_code_levels)) %>%
-  group_by(`Combined trials`) %>%
+  group_by(`All trials`) %>%
   summarize(
     Frequency = n(),
     `Mean Relational Matches` = round(mean(Total_match), 1))
