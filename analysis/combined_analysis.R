@@ -312,8 +312,8 @@ joint_data %>%
 
 # Is there a difference in match values between relational and object modal responders?
 t.test(
-  joint_data$Total_match[joint_data$modal_explanation == 1], # object
   joint_data$Total_match[joint_data$modal_explanation == 2], # relational
+  joint_data$Total_match[joint_data$modal_explanation == 1], # object
   var.equal = T # NB: t value quite different if we don't assume equal variance
 )
 
