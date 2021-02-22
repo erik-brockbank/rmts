@@ -108,8 +108,8 @@ t.test(match_data$First_two_match[match_data$Condition == "Explanation"],
   # Explainers not any more likely to choose relational match in last two rounds
   # compared to first two
 
-t.test(match_data$First_two_match[match_data$Condition == "Describe"],
-       match_data$Last_two_match[match_data$Condition == "Describe"],
+t.test(match_data$Last_two_match[match_data$Condition == "Describe"],
+       match_data$First_two_match[match_data$Condition == "Describe"],
        paired = T)
   # Describers significantly more likely to choose relational match
   # in last two rounds compared to first two
