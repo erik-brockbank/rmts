@@ -11,6 +11,7 @@ rm(list = ls())
 setwd(here::here())
 library(DescTools)
 library(lubridate)
+library(pwr)
 library(tidyverse)
 
 
@@ -20,6 +21,7 @@ library(tidyverse)
 DATA_DIR = "data"
 MATCH_DATA_FILE = "raw_match_data.csv"
 EXPLANATION_DATA_FILE = "raw_explanation_data.csv"
+UPDATE_PLOT = FALSE
 
 
 # FUNCTIONS ====
@@ -196,10 +198,13 @@ match_data_long %>%
     legend.key = element_rect(colour = "transparent", fill = "transparent")
   )
 
+
 # Save plot
-figure_name = "match_plot.png"
-ggsave(paste(here::here(), "analysis", "img", figure_name, sep = "/"),
-       width = 8, height = 6, units = "in")
+if (UPDATE_PLOT) {
+  figure_name = "match_plot.png"
+  ggsave(paste(here::here(), "analysis", "img", figure_name, sep = "/"),
+         width = 8, height = 6, units = "in")
+}
 
 
 
@@ -423,6 +428,49 @@ joint_data %>%
   summarize(
     Frequency = n(),
     `Mean Relational Matches` = round(mean(Total_match), 1))
+
+
+
+# ANALYSIS: Power calculations ====
+#
+library(pwr)
+
+#' Walker & Gopnik (2014) ("Toddlers Infer Higher-Order Relational Principles in
+#' Causal Learning") experiment 2
+#' Here for children 18-30 months old (much younger...), 15/19 participants chose
+#' relational match: M = .79, SD = .41 (identical in both "same" and "different" conditions)
+binom.test(x = 15, n = 19, p = 0.5)
+pwr.p.test(h = ES.h(.79, .5), sig.level = .05, power = 0.8)
+pwr.p.test(h = ES.h(.79, .5), sig.level = .05, n = 23)
+
+
+#' The most relevant comparison from Christie & Gentner (2014) is experiment 4,
+#' since this one uses a labeling intervention that might be similar to explanation
+
+#' Christie & Gentner (2014) Expt. 4 report the following effect sizes by age
+#' when comparing to chance:
+#' age 2: d=.83
+#' age 3: d=1.01
+#' age 4: d=1.38
+#'
+#' The actual percentage values compared to E1 as baseline (rather than chance):
+#' age 2: E4 M=.65 E1 M=.55
+#' age 3: E4 M=.71 E1 M=.56
+#' age 4: E4 M=.79 E1 M=.65
+
+
+#' Christie & Gentner (2007) compares labeling in Expt. 2 compared to E1 as baseline:
+#' age 4.5: E2 M=.68 (n.s. compared to chance) E1 M=.17
+#' age 8.5: E2 M=.84 E1 M=.34
+
+
+
+# Comparison to Christie & Gentner (2014) E4 with 4 year olds
+# Since our experiment had 23 participants, we evaluate the power to detect a similar
+# effect size (d=1.38)
+pwr.t.test(d = 1.38, sig.level = 0.05, n = 23)
+
+
 
 
 
