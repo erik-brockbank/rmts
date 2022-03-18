@@ -23,7 +23,7 @@ DATA_DIR = "data"
 MATCH_DATA_FILE = "raw_match_data.csv"
 EXPLANATION_DATA_FILE = "raw_explanation_data.csv"
 EXPLANATION_TEXT_FILE = "explanation_text.csv"
-UPDATE_PLOT = FALSE
+UPDATE_PLOT = F
 
 
 # FUNCTIONS ====
@@ -112,7 +112,7 @@ match_data %>%
 
 # t-tests
 t.test(match_data$First_two_match[match_data$Condition == "Explain"],
-       match_data$Last_two_match[match_data$Condition == "Report"],
+       match_data$Last_two_match[match_data$Condition == "Explain"],
        paired = T)
   # Explainers not any more likely to choose relational match in last two rounds
   # compared to first two
