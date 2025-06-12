@@ -8,10 +8,10 @@
 # SETUP ====
 #
 rm(list = ls())
-setwd(here::here())
+setwd(dirname(rstudioapi::getSourceEditorContext()$path))
 library(DescTools)
 library(lme4)
-library(lubridate)
+# library(lubridate)
 library(pwr)
 library(tidyverse)
 
@@ -19,11 +19,11 @@ library(tidyverse)
 # GLOBALS ====
 #
 
-DATA_DIR = "data"
+DATA_DIR = "../data"
 MATCH_DATA_FILE = "raw_match_data.csv"
 EXPLANATION_DATA_FILE = "raw_explanation_data.csv"
 EXPLANATION_TEXT_FILE = "explanation_text.csv"
-UPDATE_PLOT = F
+UPDATE_PLOT = T # toggle to save figure when running this
 
 
 # FUNCTIONS ====
@@ -209,7 +209,7 @@ match_data_long %>%
 # Save plot
 if (UPDATE_PLOT) {
   figure_name = "match_plot.png"
-  ggsave(paste(here::here(), "analysis", "img", figure_name, sep = "/"),
+  ggsave(paste("img", figure_name, sep = "/"),
          width = 8, height = 6, units = "in")
 }
 
@@ -428,8 +428,6 @@ joint_data %>%
 
 # ANALYSIS: Explanation verbalizations ====
 #
-
-# TODO what's happening with subject 49 trial 5B?
 
 explanation_text = read_csv(paste(DATA_DIR, EXPLANATION_TEXT_FILE, sep = "/"))
 explanation_text = explanation_text %>%
